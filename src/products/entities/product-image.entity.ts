@@ -6,15 +6,12 @@ export class ProductImage {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Cloudinary public_id (بتستخدمه لما تحذف الصورة أو تحدثها)
   @Column()
   publicId: string;
 
-  // رابط الصورة الفعلي من Cloudinary
   @Column()
   secureUrl: string;
 
-  // العلاقة: الصورة تخص منتج واحد فقط
   @ManyToOne(() => Product, (product) => product.images, {
     onDelete: 'CASCADE',
   })

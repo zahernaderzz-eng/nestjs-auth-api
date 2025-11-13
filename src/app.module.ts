@@ -18,6 +18,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { Category } from './categories/entities/category.entity';
 import { Product } from './products/entities/product.entity';
 import { ProductImage } from './products/entities/product-image.entity';
+import { CloudinaryModule } from './cloudianry/cloudinary.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { ProductImage } from './products/entities/product-image.entity';
     RolesModule,
     ProductsModule,
     CategoriesModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

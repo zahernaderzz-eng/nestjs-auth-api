@@ -45,7 +45,7 @@ export class Product {
   images: ProductImage[];
 
   @ManyToOne(() => Category, (category) => category.products)
-  category: Category[];
+  category: Category;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
