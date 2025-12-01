@@ -18,11 +18,12 @@ import { Resource } from '../roles/enums/resource.enum';
 import { Action } from '../roles/enums/action.enum';
 
 @Controller('categories')
-@UseGuards(AuthenticationGuard, AuthorizationGuard)
+@UseGuards(AuthenticationGuard)
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   //CREATE
+  @UseGuards(AuthorizationGuard)
   @Post()
   @Permissions([{ resource: Resource.category, actions: [Action.create] }])
   async create(

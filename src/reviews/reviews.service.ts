@@ -21,6 +21,7 @@ export class ReviewsService {
 
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    //private userService: UserService,
 
     @InjectRepository(Product)
     private productRepo: Repository<Product>,

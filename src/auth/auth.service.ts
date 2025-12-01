@@ -160,6 +160,7 @@ export class AuthService {
 
     const user = await this.userService.findOne({
       where: { id: token.userId },
+      //todo change
       select: ['id', 'email', 'password', 'name', 'accountStatus'], // IMPORTANT
     });
 

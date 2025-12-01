@@ -6,6 +6,7 @@ import { NotificationService } from './notification.service';
 @Injectable()
 @Processor('notification')
 export class NotificationProcessor extends WorkerHost {
+  //[1,2,3,4]
   private readonly logger = new Logger(NotificationProcessor.name);
 
   constructor(private readonly notificationService: NotificationService) {
@@ -40,7 +41,7 @@ export class NotificationProcessor extends WorkerHost {
             job.data.data,
           );
           break;
-
+        //enum
         case 'send-broadcast':
           this.logger.log(`Broadcasting notification to all users`);
           await this.notificationService.sendBroadcastInternal(
