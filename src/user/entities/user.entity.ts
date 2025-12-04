@@ -5,6 +5,9 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Role } from '../../roles/entities/role.entity';
 import { Product } from '../../products/entities/product.entity';
@@ -15,6 +18,7 @@ import { FcmToken } from '../../fcm-token/entities/fcm-token.entity';
 import { Review } from '../../reviews/entities/review.entity';
 import { Follower } from '../../followers/entities/follower.entity';
 import { Exclude } from 'class-transformer';
+import { AccountStatus } from '../enums/account.status.enum';
 
 @Entity()
 export class User {
@@ -31,8 +35,15 @@ export class User {
   @Exclude()
   password: string;
 
-  @Column({ default: 'unverified' })
-  accountStatus: 'verified' | 'unverified';
+  @Column({
+    type: 'enum',
+    enum: AccountStatus,
+    default: AccountStatus.UNVERIFIED,
+  })
+  accountStatus: AccountStatus;
+
+  @Column({ nullable: true })
+  roleId: string;
 
   @ManyToOne(() => Role, (role) => role.users)
   @JoinColumn({ name: 'roleId' })
@@ -57,4 +68,22 @@ export class User {
 
   @OneToMany(() => Follower, (f) => f.user)
   followers: Follower[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @Column({ nullable: true })
+  avatar: string;
+
+  @Column({ nullable: true })
+  address: string;
 }

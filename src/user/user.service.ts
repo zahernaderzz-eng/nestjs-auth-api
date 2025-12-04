@@ -1,15 +1,17 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private roleService: RolesService,
   ) {}
 
   //
@@ -38,28 +40,34 @@ export class UserService {
     return this.userRepo.find();
   }
 
-  async getUserPermission(userId: number) {
-    const user = await this.findOne({
+  async getUserPermissions(userId: number) {
+    const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['role'],
     });
 
     if (!user) {
-      throw new BadRequestException('user not found');
+      throw new NotFoundException('User not found');
     }
 
-    const role = user.role;
-
-    if (!role) {
-      throw new BadRequestException('role not found');
+    if (!user.role) {
+      throw new NotFoundException('Role not assigned to user');
     }
 
-    const fullRole = await this.roleService.getRoleById(role.id);
+    return user.role.permissions;
+  }
 
-    if (!fullRole) {
-      throw new BadRequestException('role not found');
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepo.findOne({
+      where: { email: email.toLowerCase() },
+    });
+  }
+
+  async findById(id: number): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
-
-    return fullRole.permissions;
+    return user;
   }
 }

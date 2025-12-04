@@ -22,6 +22,7 @@ import { JwtPayload } from './types/jwt-payload.type';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { User } from '../user/entities/user.entity';
+import { AccountStatus } from '../user/enums/account.status.enum';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -106,7 +107,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (user.accountStatus === 'unverified') {
+    if (user.accountStatus === AccountStatus.UNVERIFIED) {
       if (!otp) {
         return {
           message: 'Account verification required',
@@ -119,7 +120,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid or expired OTP');
       }
 
-      user.accountStatus = 'verified';
+      user.accountStatus = AccountStatus.VERIFIED;
       await this.userService.save(user);
     }
 

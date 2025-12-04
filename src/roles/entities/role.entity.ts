@@ -13,7 +13,7 @@ import { User } from '../../user/entities/user.entity';
 @Entity()
 export class Role {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Column({ unique: true })
   name: string;
