@@ -122,7 +122,7 @@ Prevents blocking Auth requests and ensures reliability.
 - **NestJS** (core framework)  
 - **TypeScript**  
 - **TypeORM**  
-- **PostgreSQL / MySQL** (your DB)  
+- **PostgreSQL  
 - **JWT**  
 - **BullMQ + Redis**  
 - **Cloudinary**  
