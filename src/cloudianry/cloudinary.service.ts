@@ -23,6 +23,3 @@ export class CloudinaryService {
     });
   }
 }
-//todo refactor to use pre signed urls
-// study cdns and amazon cloud front
-// read about validation with lamda and auth with lamda edge لمئا مبتتكتبش كده
