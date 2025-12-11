@@ -19,22 +19,23 @@ import { OTPType } from '../otp/type/OTPType';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './types/jwt-payload.type';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
+
 import { User } from '../user/entities/user.entity';
 import { AccountStatus } from '../user/enums/account.status.enum';
 import { Role } from '../roles/entities/role.entity';
+import { EmailQueueService } from '../mail/email-queue.service';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     @InjectRepository(ResetToken) private resetToken: Repository<ResetToken>,
-    @InjectQueue('email') private readonly emailQueue: Queue,
+
     private readonly dataSource: DataSource,
     private jwtService: JwtService,
     private otpService: OTPService,
     private userService: UserService,
     private configService: ConfigService,
+    private readonly emailQueue: EmailQueueService,
   ) {}
 
   // ───────────────────────────────────────────────
@@ -78,17 +79,10 @@ export class AuthService {
         OTPType.OTP,
       );
 
-      await this.emailQueue.add(
-        'send-otp',
-        {
-          to: email,
-          otp,
-        },
-        {
-          attempts: 5,
-          backoff: { type: 'exponential', delay: 3000 },
-        },
-      );
+      await this.emailQueue.sendOtp({
+        to: email,
+        otp,
+      });
 
       await queryRunner.commitTransaction();
       this.logger.log(`User signed up successfully: ${email}`);
@@ -192,7 +186,7 @@ export class AuthService {
         userId: user.id,
       });
       try {
-        await this.emailQueue.add('password-reset', {
+        await this.emailQueue.sendPasswordReset({
           to: email,
           token: resetToken,
         });
@@ -296,7 +290,7 @@ export class AuthService {
 
     const otp = await this.otpService.generateOTP(user, OTPType.OTP);
 
-    await this.emailQueue.add('send-otp', {
+    await this.emailQueue.sendOtp({
       to: email,
       otp,
     });

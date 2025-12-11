@@ -1,8 +1,4 @@
-export const EMAIL_JOB_NAMES = {
-  SEND_OTP: 'send-otp',
-  PASSWORD_RESET: 'password-reset',
-  ORDER_CONFIRMATION: 'order-confirmation',
-} as const;
+import { EMAIL_JOB_NAMES } from './email-job-names';
 
 export interface SendOtpJobData {
   to: string;
@@ -21,14 +17,16 @@ export interface OrderItemData {
   lineTotal: number;
 }
 
+export interface OrderData {
+  orderId: string;
+  total: number;
+  items: OrderItemData[];
+  createdAt: Date;
+}
+
 export interface OrderConfirmationJobData {
   to: string;
-  orderData: {
-    orderId: string;
-    total: number;
-    items: OrderItemData[];
-    createdAt: Date;
-  };
+  orderData: OrderData;
 }
 
 export type EmailJobPayload =
@@ -40,4 +38,10 @@ export interface EmailJobDataMap {
   [EMAIL_JOB_NAMES.SEND_OTP]: SendOtpJobData;
   [EMAIL_JOB_NAMES.PASSWORD_RESET]: PasswordResetJobData;
   [EMAIL_JOB_NAMES.ORDER_CONFIRMATION]: OrderConfirmationJobData;
+}
+
+export const MAIL_QUEUE_NAME = 'email';
+
+export interface EmailJobStrategy<TData> {
+  execute(data: TData): Promise<void>;
 }

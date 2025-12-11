@@ -8,20 +8,26 @@ import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { initFirebaseAdmin } from './firebase/firebase-admin';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 async function bootstrap() {
   initFirebaseAdmin();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  const reflector = app.get(Reflector);
 
   app.use(helmet());
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
+  // Configure webhook raw body BEFORE json parser
   app.use('/payment/webhook', bodyParser.raw({ type: 'application/json' }));
 
+  // Then json for other routes
   app.use(bodyParser.json());
 
+  // Add interceptors
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
   app.useGlobalInterceptors(new ResponseInterceptor());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -37,7 +43,6 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
   SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);

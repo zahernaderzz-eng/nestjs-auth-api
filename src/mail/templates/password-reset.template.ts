@@ -1,0 +1,4 @@
+export const passwordResetTemplate = (resetLink: string) => `
+  <p>You requested a password reset. Click the link below to reset your password:</p>
+  <p><a href="${resetLink}">Reset Password</a></p>
+`;

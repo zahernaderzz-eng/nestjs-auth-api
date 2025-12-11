@@ -1,8 +1,18 @@
-import { Controller, Post, Req, Res, Headers, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Req,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  UseInterceptors,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { ConfigService } from '@nestjs/config';
+import { Request, Response } from 'express';
 
 @Controller()
+@UseInterceptors() // Disable all interceptors for this controller
 export class RawWebhookController {
   constructor(
     private paymentService: PaymentService,
@@ -10,35 +20,37 @@ export class RawWebhookController {
   ) {}
 
   @Post('/payment/webhook')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async handleRawWebhook(
-    @Req() req: any,
-    @Res() res: any,
+    @Req() req: Request & { rawBody?: Buffer },
     @Headers('stripe-signature') signature: string,
   ) {
-    let event;
-    const secret = this.config.get('STRIPE_WEBHOOK_SECRET');
-
     try {
-      const payload = req.rawBody || req.body;
+      const secret = this.config.get('STRIPE_WEBHOOK_SECRET');
+
+      // Get raw body from request
+      const payload = req.rawBody || (req as any).body;
 
       if (!payload) {
-        throw new Error('No payload received');
+        throw new Error('Missing raw body');
       }
 
-      event = this.paymentService['stripe'].webhooks.constructEvent(
+      if (!signature) {
+        throw new Error('Missing stripe-signature header');
+      }
+
+      const event = this.paymentService['stripe'].webhooks.constructEvent(
         payload,
         signature,
-        secret!,
+        secret,
       );
 
-      console.log('Webhook verified successfully:', event.type);
-    } catch (err) {
-      console.error(' Webhook signature error:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+      await this.paymentService.handleWebhook(event);
 
-    await this.paymentService.handleWebhook(event);
-    return res.status(200).json({ received: true });
+      return { received: true };
+    } catch (err) {
+      console.error('Webhook Error:', err.message);
+      throw new Error(`Webhook Error: ${err.message}`);
+    }
   }
 }
